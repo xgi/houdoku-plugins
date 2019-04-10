@@ -1,0 +1,12 @@
+apply plugin: 'java'
+
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+dependencies {
+    compile 'com.github.xgi:houdoku:-SNAPSHOT'
+}
