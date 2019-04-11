@@ -1,6 +1,10 @@
 version: 2
 jobs:
   build:
+    branches:
+      ignore:
+        - repo
+
     docker:
       - image: circleci/openjdk:8-jdk
 
