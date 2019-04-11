@@ -1,6 +1,7 @@
 # download/authorize google cloud sdk
 curl -o gcloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz 
-tar zxvf gcloud-sdk.tar.gz gcloud-sdk
+tar zxvf gcloud-sdk.tar.gz google-cloud-sdk
+mv google-cloud-sdk gcloud-sdk
 
 echo $GCLOUD_SERVICE_KEY | ./gcloud-sdk/bin/gcloud auth activate-service-account --key-file=-
 ./gcloud-sdk/bin/gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
