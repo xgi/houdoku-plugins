@@ -1,0 +1,7 @@
+{
+    "name": "MangaTown",
+    "domain": "www.mangatown.com",
+    "type": "content",
+    "class": "MangaTown",
+    "version": "1.0.0"
+}

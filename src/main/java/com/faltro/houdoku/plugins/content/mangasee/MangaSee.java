@@ -1,5 +1,7 @@
 package com.faltro.houdoku.plugins.content;
 
+import com.faltro.houdoku.plugins.content.ContentSource;
+import com.faltro.houdoku.plugins.content.GenericContentSource;
 import com.faltro.houdoku.model.Chapter;
 import com.faltro.houdoku.model.Series;
 import com.faltro.houdoku.util.ParseHelpers;

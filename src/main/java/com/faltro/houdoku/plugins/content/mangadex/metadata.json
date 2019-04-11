@@ -1,0 +1,7 @@
+{
+    "name": "MangaDex",
+    "domain": "mangadex.org",
+    "type": "content",
+    "class": "MangaDex",
+    "version": "1.0.0"
+}

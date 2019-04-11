@@ -1,0 +1,7 @@
+{
+    "name": "MangaHasu",
+    "domain": "mangahasu.se",
+    "type": "content",
+    "class": "MangaHasu",
+    "version": "1.0.0"
+}
