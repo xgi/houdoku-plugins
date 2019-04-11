@@ -4,8 +4,13 @@ git config --global user.name "xgi-bot"
 git checkout -b repo
 git pull origin repo
 
-mv ./build/classes/java/main/com/faltro/houdoku/plugins/content ./
+mkdir ../repo
 
-git add -fA
+mv ./build/classes/java/main/com/faltro/houdoku/plugins/content ../repo/
+mv .git ../repo/
+
+cd ../repo
+
+git add -A
 git commit --allow-empty -m "[auto] circleci deploy"
-git push origin repo
+git push origin repo --force
