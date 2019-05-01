@@ -1,10 +1,6 @@
 version: 2
 jobs:
   build:
-    branches:
-      ignore:
-        - repo
-
     docker:
       - image: circleci/openjdk:8-jdk
 
@@ -23,10 +19,6 @@ jobs:
       - run:
           name: build
           command: ./gradlew build
-
-      - add_ssh_keys:
-          fingerprints:
-            - "e0:7c:60:d7:36:98:6d:c7:46:84:76:d4:aa:87:93:ff"
 
       - run:
           name: deploy
