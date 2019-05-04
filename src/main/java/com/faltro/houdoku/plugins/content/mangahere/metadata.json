@@ -3,5 +3,5 @@
     "domain": "www.mangahere.cc",
     "type": "content",
     "class": "MangaHere",
-    "version": "1.0.0"
+    "revision": 1
 }

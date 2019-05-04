@@ -3,5 +3,5 @@
     "domain": "mangapark.me",
     "type": "content",
     "class": "MangaPark",
-    "version": "1.0.0"
+    "revision": 1
 }

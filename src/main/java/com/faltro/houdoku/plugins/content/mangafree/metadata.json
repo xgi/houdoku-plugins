@@ -3,5 +3,5 @@
     "domain": "mangafree.online",
     "type": "content",
     "class": "MangaFree",
-    "version": "1.0.0"
+    "revision": 1
 }

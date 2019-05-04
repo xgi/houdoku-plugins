@@ -3,5 +3,5 @@
     "domain": "mangadex.org",
     "type": "content",
     "class": "MangaDex",
-    "version": "1.0.0"
+    "revision": 1
 }

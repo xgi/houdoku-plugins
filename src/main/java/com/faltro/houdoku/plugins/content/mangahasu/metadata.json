@@ -3,5 +3,5 @@
     "domain": "mangahasu.se",
     "type": "content",
     "class": "MangaHasu",
-    "version": "1.0.0"
+    "revision": 1
 }
