@@ -34,6 +34,7 @@ public class MangaTown extends GenericContentSource {
     public static final String NAME = "MangaTown";
     public static final String DOMAIN = "www.mangatown.com";
     public static final String PROTOCOL = "http";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {

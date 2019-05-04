@@ -39,6 +39,7 @@ public class MangaPark extends GenericContentSource {
     public static final String NAME = "MangaPark";
     public static final String DOMAIN = "mangapark.me";
     public static final String PROTOCOL = "https";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {

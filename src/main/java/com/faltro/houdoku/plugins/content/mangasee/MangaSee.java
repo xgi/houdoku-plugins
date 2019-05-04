@@ -35,6 +35,7 @@ public class MangaSee extends GenericContentSource {
     public static final String NAME = "MangaSee";
     public static final String DOMAIN = "mangaseeonline.us";
     public static final String PROTOCOL = "https";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {

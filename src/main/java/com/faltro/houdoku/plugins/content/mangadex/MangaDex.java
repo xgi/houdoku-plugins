@@ -42,6 +42,7 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {

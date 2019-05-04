@@ -34,6 +34,7 @@ public class MangaHasu extends GenericContentSource {
     public static final String NAME = "MangaHasu";
     public static final String DOMAIN = "mangahasu.se";
     public static final String PROTOCOL = "http";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {

@@ -35,6 +35,7 @@ public class MangaHere extends GenericContentSource {
     public static final String NAME = "MangaHere";
     public static final String DOMAIN = "www.mangahere.cc";
     public static final String PROTOCOL = "http";
+    public static final int REVISION = 1;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
