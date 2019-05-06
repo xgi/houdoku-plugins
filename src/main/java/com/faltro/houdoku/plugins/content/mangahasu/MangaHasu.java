@@ -34,7 +34,7 @@ public class MangaHasu extends GenericContentSource {
     public static final String NAME = "MangaHasu";
     public static final String DOMAIN = "mangahasu.se";
     public static final String PROTOCOL = "http";
-    public static final int REVISION = 1;
+    public static final int REVISION = 2;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -147,24 +147,21 @@ public class MangaHasu extends GenericContentSource {
     public Image image(Chapter chapter, int page) throws IOException, ContentUnavailableException {
         Image result = null;
 
-//        if (chapter.imageUrlTemplate != null) {
-//            result = imageFromURL(String.format(chapter.imageUrlTemplate, page));
-//        } else {
-//            Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource()));
-//            Elements pages = document.selectFirst("div[class=vung-doc]").select("img");
-//            String first_src = pages.get(0).attr("src");
-//
-//            chapter.images = new Image[pages.size()];
-//            chapter.imageUrlTemplate = first_src.replace("/1", "/%s");
-//
-//             rerun the method, but we should now match chapter.iUT != null
-//            result = image(chapter, page);
-//        }
+        if (chapter.imageUrlTemplate != null) {
+            String page_number = String.format("%03d", page);
+            result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page_number));
+        } else {
+            Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource()));
+            Elements images = document.selectFirst("div[class=img-chapter]").select("img");
+            String first_src = images.get(0).attr("src");
 
-//        return result;
-        Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource()));
-        System.out.println(document);
-        Element p = document.selectFirst("img[class=page1]");
-        return imageFromURL(client, p.attr("src"));
+            chapter.images = new Image[images.size()];
+            chapter.imageUrlTemplate = first_src.replace("/001", "/%s");
+
+            // rerun the method, but we should now match chapter.iUT != null
+            result = image(chapter, page);
+        }
+
+        return result;
     }
 }
