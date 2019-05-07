@@ -46,39 +46,60 @@ public class MangaDex extends GenericContentSource {
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
-        Document document = parse(GET(client,
-                PROTOCOL + "://" + DOMAIN + "/?page=search&title=" + query));
+        // searching is disabled for non-authenticated users, so until that's supported in the
+        // client (if ever) this functionality is only used to retrieve a series by its id
+        String source = "/api/manga/" + query;
+        Series series = series(source, true);
+
+        String details = String.format("%s\n★%s/10\n%s views\n%s followers",
+            series.getTitle(),
+            series.author,
+            series.status
+        );
+
+        HashMap<String, Object> content = new HashMap<>();
+        content.put("contentSourceId", ID);
+        content.put("source", source);
+        content.put("title", series.getTitle());
+        content.put("details", details);
 
         ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
-        Elements links = document.select("a[class*=manga_title]");
-        for (Element link : links) {
-            String linkHref = link.attr("href");
-            String source = linkHref.substring(0, linkHref.lastIndexOf("/"));
-            String title = link.text();
-            Element parentDiv = link.parent().parent();
-            String coverSrc = parentDiv.selectFirst("img").attr("src");
-            String rating = parentDiv.selectFirst("span[title*=votes]").parent()
-                    .select("span").get(2).ownText();
-            String follows = parentDiv.selectFirst("span[title=Follows]").parent().ownText();
-            String views = parentDiv.selectFirst("span[title=Views]").parent().ownText();
-
-            String details = String.format("%s\n★%s/10\n%s views\n%s followers",
-                    title,
-                    rating,
-                    views,
-                    follows
-            );
-
-            HashMap<String, Object> content = new HashMap<>();
-            content.put("contentSourceId", ID);
-            content.put("source", source);
-            content.put("coverSrc", PROTOCOL + "://" + DOMAIN + coverSrc);
-            content.put("title", title);
-            content.put("details", details);
-
-            data_arr.add(content);
-        }
+        data_arr.add(content);
         return data_arr;
+
+        // Document document = parse(GET(client,
+        //         PROTOCOL + "://" + DOMAIN + "/?page=search&title=" + query));
+
+        // ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
+        // Elements links = document.select("a[class*=manga_title]");
+        // for (Element link : links) {
+        //     String linkHref = link.attr("href");
+        //     String source = linkHref.substring(0, linkHref.lastIndexOf("/"));
+        //     String title = link.text();
+        //     Element parentDiv = link.parent().parent();
+        //     String coverSrc = parentDiv.selectFirst("img").attr("src");
+        //     String rating = parentDiv.selectFirst("span[title*=votes]").parent()
+        //             .select("span").get(2).ownText();
+        //     String follows = parentDiv.selectFirst("span[title=Follows]").parent().ownText();
+        //     String views = parentDiv.selectFirst("span[title=Views]").parent().ownText();
+
+        //     String details = String.format("%s\n★%s/10\n%s views\n%s followers",
+        //             title,
+        //             rating,
+        //             views,
+        //             follows
+        //     );
+
+        //     HashMap<String, Object> content = new HashMap<>();
+        //     content.put("contentSourceId", ID);
+        //     content.put("source", source);
+        //     content.put("coverSrc", PROTOCOL + "://" + DOMAIN + coverSrc);
+        //     content.put("title", title);
+        //     content.put("details", details);
+
+        //     data_arr.add(content);
+        // }
+        // return data_arr;
     }
 
     @Override
@@ -119,62 +140,28 @@ public class MangaDex extends GenericContentSource {
 
     @Override
     public Series series(String source, boolean quick) throws IOException {
-        Document seriesDocument = parse(GET(client, PROTOCOL + "://" + DOMAIN + source));
+        System.out.println(PROTOCOL + "://" + DOMAIN + source);
+        Response response = GET(client, PROTOCOL + "://" + DOMAIN + source);
+        JsonObject json_data = new JsonParser().parse(response.body().string())
+                .getAsJsonObject();
+        JsonObject json_manga = json_data.get("manga").getAsJsonObject();
 
-        Element titlePanel = seriesDocument.selectFirst("h6");
-        String title = titlePanel.ownText();
-        Language language = Languages.get(titlePanel.selectFirst("span[class*=flag]").attr("title"));
-
-        Element contentContainer = seriesDocument.selectFirst("div[class=card-body p-0]");
-        String imageSource = contentContainer.selectFirst("img[class=rounded]").attr("src");
+        String title = json_manga.get("title").getAsString();
+        String imageSource = json_manga.get("cover_url").getAsString();
         Image cover = imageFromURL(client, PROTOCOL + "://" + DOMAIN + imageSource, ParseHelpers.COVER_MAX_WIDTH);
-
-        Element metadataContainer = contentContainer.selectFirst(
-                "div[class=col-xl-9 col-lg-8 col-md-7]");
-        Element rowAltNames = metadataContainer.selectFirst(
-                "div:containsOwn(Alt name)").parent().select("div").get(2);
-        Element rowAuthor = metadataContainer.selectFirst(
-                "div:containsOwn(Author)").parent().select("div").get(2);
-        Element rowArtist = metadataContainer.selectFirst(
-                "div:containsOwn(Artist)").parent().select("div").get(2);
-        Element rowGenres = metadataContainer.selectFirst(
-                "div:containsOwn(Genre)").parent().select("div").get(2);
-        Element rowRating = metadataContainer.selectFirst(
-                "div:containsOwn(Rating)").parent().select("div").get(2);
-        Element rowStatus = metadataContainer.selectFirst(
-                "div:containsOwn(Pub. status)").parent().select("div").get(2);
-        Element rowStats = metadataContainer.selectFirst(
-                "div:containsOwn(Stats)").parent().select("div").get(2);
-        Element rowDescription = metadataContainer.selectFirst(
-                "div:containsOwn(Description)").parent().select("div").get(2);
-
-        String[] altNames = ParseHelpers.htmlListToStringArray(rowAltNames.selectFirst("ul"));
-        String author = rowAuthor.selectFirst("a").text();
-        String artist = rowArtist.selectFirst("a").text();
-        String[] genres = ParseHelpers.htmlListToStringArray(rowGenres, "span");
-        double rating = ParseHelpers.parseDouble(
-                rowRating.selectFirst("span[title=Bayesian rating]").parent().text());
-        int ratings = ParseHelpers.parseInt(
-                rowRating.selectFirst("span[title=Users]").parent().text());
-        String status = rowStatus.text();
-        int views = ParseHelpers.parseInt(rowStats.selectFirst("span[title=Views]")
-                .parent().text());
-        int follows = ParseHelpers.parseInt(rowStats.selectFirst("span[title=Follows]")
-                .parent().text());
-        String description = rowDescription.text();
+        Language language = Languages.get(json_manga.get("lang_name").getAsString());
+        String author = json_manga.get("author").getAsString();
+        String artist = json_manga.get("artist").getAsString();
+        String description = json_manga.get("description").getAsString();
+        int status_code = json_manga.get("status").getAsInt();
+        String status = status_code == 1 ? "Releasing" : "Finished";
 
         HashMap<String, Object> metadata = new HashMap<>();
         metadata.put("language", language);
         metadata.put("author", author);
         metadata.put("artist", artist);
         metadata.put("status", status);
-        metadata.put("altNames", altNames);
         metadata.put("description", description);
-        metadata.put("views", views);
-        metadata.put("follows", follows);
-        metadata.put("rating", rating);
-        metadata.put("ratings", ratings);
-        metadata.put("genres", genres);
 
         Series series = new Series(title, source, cover, ID, metadata);
         series.setChapters(chapters(series));
