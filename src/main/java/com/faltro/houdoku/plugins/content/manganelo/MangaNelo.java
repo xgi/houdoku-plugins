@@ -9,8 +9,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import static com.faltro.houdoku.net.Requests.*;
 
 /**
@@ -28,7 +32,7 @@ public class MangaNelo extends GenericContentSource {
     public static final String NAME = "MangaNelo";
     public static final String DOMAIN = "manganelo.com";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 2;
+    public static final int REVISION = 3;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -73,11 +77,28 @@ public class MangaNelo extends GenericContentSource {
             Element link = row.selectFirst("a");
             String title = link.text();
             String source = link.attr("href").substring(PROTOCOL.length() + 3 + DOMAIN.length());
-            String chapterNumExtended = link.text();
-            double chapterNum = ParseHelpers.parseDouble(
-                    chapterNumExtended.substring(chapterNumExtended.indexOf("hapter") + 7));
+            double chapterNum =
+                    ParseHelpers.parseDouble(source.substring(source.indexOf("/chapter_") + 9));
+            int volumeNum = -1;
+            if (title.startsWith("Vol") && !title.startsWith("Vol.tbd")) {
+                volumeNum = ParseHelpers.parseInt(title.substring(4));
+            }
+            Elements spans = row.select("span");
+            int views = ParseHelpers.parseInt(spans.get(1).text());
+            String dateString = spans.get(2).attr("title");
+            DateTimeFormatter dateTimeFormatter =
+                    DateTimeFormatter.ofPattern("MMM-dd-yyyy hh:mm", Locale.ENGLISH);
+            LocalDateTime localDateTime =
+                    dateString.contains("ago") ? LocalDate.now().atStartOfDay()
+                            : ParseHelpers.potentiallyRelativeDate(dateString, dateTimeFormatter);
+
             HashMap<String, Object> metadata = new HashMap<>();
             metadata.put("chapterNum", chapterNum);
+            if (volumeNum != -1) {
+                metadata.put("volumeNum", volumeNum);
+            }
+            metadata.put("views", views);
+            metadata.put("localDateTime", localDateTime);
 
             chapters.add(new Chapter(series, title, source, metadata));
         }
