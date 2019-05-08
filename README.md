@@ -22,6 +22,7 @@ maintainer.
 | 4 | MangaPark | mangapark.me      | --- |
 | 5 | MangaFree | mangafree.online  | --- |
 | 6 | MangaHasu | mangahasu.se      | some chapters are arbitrarily unavailable |
+| 7 | MangaNelo | manganelo.com     | --- |
 
 An automatically-updating index of plugins is available at
 <https://storage.googleapis.com/houdoku-plugins/index.json>.
