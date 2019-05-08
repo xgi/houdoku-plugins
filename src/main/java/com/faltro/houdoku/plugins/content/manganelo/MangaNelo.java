@@ -28,10 +28,11 @@ public class MangaNelo extends GenericContentSource {
     public static final String NAME = "MangaNelo";
     public static final String DOMAIN = "manganelo.com";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 1;
+    public static final int REVISION = 2;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
+        query = query.replace(' ', '_');
         Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + "/search/" + query));
 
         ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
