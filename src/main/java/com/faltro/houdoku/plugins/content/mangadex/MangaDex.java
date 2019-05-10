@@ -26,17 +26,6 @@ import java.util.TimeZone;
 
 import static com.faltro.houdoku.net.Requests.*;
 
-/**
- * This class contains implementation details for processing data from a
- * specific "content source" - a website which contains series data and images.
- * <p>
- * For method and field documentation, please see the ContentSource class.
- * Additionally, the implementation of some common methods is done in the
- * GenericContentSource class.
- *
- * @see GenericContentSource
- * @see ContentSource
- */
 public class MangaDex extends GenericContentSource {
     public static final int ID = 0;
     public static final String NAME = "MangaDex";
