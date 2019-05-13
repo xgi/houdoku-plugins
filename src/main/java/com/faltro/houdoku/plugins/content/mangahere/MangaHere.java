@@ -10,6 +10,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import okhttp3.Response;
+import javax.script.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -142,8 +144,8 @@ public class MangaHere extends GenericContentSource {
 
     @Override
     public Image image(Chapter chapter, int page) throws IOException, ContentUnavailableException {
-        Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource() +
-                (Integer.toString(page)) + ".html"));
+        String url = PROTOCOL + "://" + DOMAIN + chapter.getSource() + Integer.toString(page) + ".html";
+        Document document = parse(GET(client, url));
 
         Elements errors = document.select("div[class=mangaread_error]");
         if (errors.size() > 0) {
@@ -152,6 +154,64 @@ public class MangaHere extends GenericContentSource {
                         "available on " + NAME + ".");
             }
         }
+
+        // evaluate javascript function to get key for script url
+        String html = document.toString();
+        int idxScript1 = html.indexOf("eval(function(p,a,c,k,e,d)");
+        String script_extended = html.substring(idxScript1);
+        int idxScript2 = script_extended.indexOf("</script>");
+        String script = html.substring(idxScript1, idxScript1 + idxScript2 - 2).substring(5);
+
+        ScriptEngineManager manager = new ScriptEngineManager();
+        ScriptEngine engine = manager.getEngineByName("javascript");
+        
+        String key = "";
+        try {
+            engine.eval("var pre = (" + script + ");");
+            String pre = (String) engine.get("pre");
+
+            int idxKey1 = pre.indexOf("'");
+            int idxKey2 = pre.indexOf(";");
+            
+            script = pre.substring(idxKey1, idxKey2);
+            engine.eval("var key = (" + script + ");");
+            key = (String) engine.get("key");
+        } catch (ScriptException e) {
+            return null;
+        }
+
+        if (key == "") return null;
+
+        // use key to download another script
+        int idxChapterid1 = html.indexOf("chapterid =");
+        String chapterid_extended = html.substring(idxChapterid1);
+        int idxChapterid2 = chapterid_extended.indexOf(";");
+        String chapterid = html.substring(idxChapterid1 + 11, idxChapterid1 + idxChapterid2);
+
+        String script_url = url + String.format("/chapterfun.ashx?cid=%s&page=%d&key=%s",
+            chapterid, page, key
+        );
+        System.out.println(script_url);
+        Response response = GET(client, script_url);
+        script = response.body().string();
+        script = script.substring(5, script.length() - 2);
+
+        String deobfuscated = "";
+        try {
+            engine.eval("var deobfuscated = (" + script + ");");
+            deobfuscated = (String) engine.get("deobfuscated");
+        } catch (ScriptException e) {
+            return null;
+        }
+
+        if (deobfuscated == "") return null;
+
+        // extract image url from deobfuscated script
+        int idxBase1 = deobfuscated.indexOf("pix=\"");
+        String base_extended = deobfuscated.substring(idxBase1);
+        int idxBase2 = base_extended.indexOf(";");
+        String base = deobfuscated.substring(idxBase1, idxBase1 + idxBase2);
+        System.out.println(base);
 
         // we may not have determined the number of pages yet, so do that here
         if (chapter.images.length == 1) {
@@ -162,7 +222,7 @@ public class MangaHere extends GenericContentSource {
             chapter.images = new Image[num_pages];
         }
 
-        String url = document.selectFirst("img#image").attr("src");
-        return imageFromURL(client, url);
+        // return imageFromURL(client, url);
+        return null;
     }
 }

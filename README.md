@@ -15,14 +15,14 @@ maintainer.
 
 | ID | Name | Domain | Comments |
 | - | - | - | - |
-| 0 | MangaDex  | mangadex.org      | search only accepts series IDs (from page URL) |
-| 1 | MangaHere | www.mangahere.cc  | some licensed series are unavailable |
-| 2 | MangaSee  | mangaseeonline.us | --- |
-| 3 | MangaTown | www.mangatown.com | default series list is unavailable, but otherwise fully functional |
-| 4 | MangaPark | mangapark.me      | --- |
-| 5 | MangaFree | mangafree.online  | --- |
-| 6 | MangaHasu | mangahasu.se      | some chapters are arbitrarily unavailable |
-| 7 | MangaNelo | manganelo.com     | --- |
+| 0 | MangaDex  | [mangadex.org](https://mangadex.org)           | search only accepts series IDs (from page URL) |
+| 1 | MangaHere | [www.mangahere.cc](https://www.mangahere.cc)   | some licensed series are unavailable |
+| 2 | MangaSee  | [mangaseeonline.us](https://mangaseeonline.us) | --- |
+| 3 | MangaTown | [www.mangatown.com](http://www.mangatown.com)  | default series list is unavailable, but otherwise fully functional |
+| 4 | MangaPark | [mangapark.me](https://mangapark.me)           | --- |
+| 5 | MangaFree | [mangafree.online](https://mangafree.online)   | --- |
+| 6 | MangaHasu | [mangahasu.se](http://mangahasu.se)            | some chapters are arbitrarily unavailable |
+| 7 | MangaNelo | [manganelo.com](https://manganelo.com)         | --- |
 
 An automatically-updating index of plugins is available at
 <https://storage.googleapis.com/houdoku-plugins/index.json>.
