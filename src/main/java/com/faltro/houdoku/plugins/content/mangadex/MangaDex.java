@@ -15,7 +15,6 @@ import okhttp3.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
-
 import static com.faltro.houdoku.net.Requests.*;
 
 public class MangaDex extends GenericContentSource {
@@ -31,72 +29,35 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 1;
+    public static final int REVISION = 2;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
         // searching is disabled for non-authenticated users, so until that's supported in the
         // client (if ever) this functionality is only used to retrieve a series by its id
-        String source = "/api/manga/" + query;
-        Series series = series(source, true);
-
-        String details = String.format("%s\n★%s/10\n%s views\n%s followers",
-            series.getTitle(),
-            series.author,
-            series.status
-        );
-
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("contentSourceId", ID);
-        content.put("source", source);
-        content.put("title", series.getTitle());
-        content.put("details", details);
-
         ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
-        data_arr.add(content);
+        if (query.matches("-?\\d+(\\.\\d+)?")) { // is numeric
+            Series series = series(query, true);
+
+            String details = String.format("%s\n%s", series.getTitle(), series.author);
+
+            HashMap<String, Object> content = new HashMap<>();
+            content.put("contentSourceId", ID);
+            content.put("source", series.getSource());
+            content.put("title", series.getTitle());
+            content.put("coverImg", series.getCover());
+            content.put("details", details);
+
+            data_arr.add(content);
+        }
         return data_arr;
-
-        // Document document = parse(GET(client,
-        //         PROTOCOL + "://" + DOMAIN + "/?page=search&title=" + query));
-
-        // ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
-        // Elements links = document.select("a[class*=manga_title]");
-        // for (Element link : links) {
-        //     String linkHref = link.attr("href");
-        //     String source = linkHref.substring(0, linkHref.lastIndexOf("/"));
-        //     String title = link.text();
-        //     Element parentDiv = link.parent().parent();
-        //     String coverSrc = parentDiv.selectFirst("img").attr("src");
-        //     String rating = parentDiv.selectFirst("span[title*=votes]").parent()
-        //             .select("span").get(2).ownText();
-        //     String follows = parentDiv.selectFirst("span[title=Follows]").parent().ownText();
-        //     String views = parentDiv.selectFirst("span[title=Views]").parent().ownText();
-
-        //     String details = String.format("%s\n★%s/10\n%s views\n%s followers",
-        //             title,
-        //             rating,
-        //             views,
-        //             follows
-        //     );
-
-        //     HashMap<String, Object> content = new HashMap<>();
-        //     content.put("contentSourceId", ID);
-        //     content.put("source", source);
-        //     content.put("coverSrc", PROTOCOL + "://" + DOMAIN + coverSrc);
-        //     content.put("title", title);
-        //     content.put("details", details);
-
-        //     data_arr.add(content);
-        // }
-        // return data_arr;
     }
 
     @Override
     public ArrayList<Chapter> chapters(Series series) throws IOException {
-        String id_str = series.getSource().split("/")[2];
-        Response response = GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + id_str);
-        JsonObject json_data = new JsonParser().parse(response.body().string())
-                .getAsJsonObject();
+        Response response =
+                GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + series.getSource());
+        JsonObject json_data = new JsonParser().parse(response.body().string()).getAsJsonObject();
         JsonObject json_chapters = json_data.get("chapter").getAsJsonObject();
 
         ArrayList<Chapter> chapters = new ArrayList<>();
@@ -111,8 +72,7 @@ public class MangaDex extends GenericContentSource {
             String group = json_chapter.get("group_name").getAsString();
             LocalDateTime localDateTime = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(json_chapter.get("timestamp").getAsLong()),
-                    TimeZone.getDefault().toZoneId()
-            );
+                    TimeZone.getDefault().toZoneId());
 
             HashMap<String, Object> metadata = new HashMap<>();
             metadata.put("chapterNum", chapterNum);
@@ -129,15 +89,15 @@ public class MangaDex extends GenericContentSource {
 
     @Override
     public Series series(String source, boolean quick) throws IOException {
-        System.out.println(PROTOCOL + "://" + DOMAIN + source);
-        Response response = GET(client, PROTOCOL + "://" + DOMAIN + source);
-        JsonObject json_data = new JsonParser().parse(response.body().string())
-                .getAsJsonObject();
+        Response response =
+                GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + source);
+        JsonObject json_data = new JsonParser().parse(response.body().string()).getAsJsonObject();
         JsonObject json_manga = json_data.get("manga").getAsJsonObject();
 
         String title = json_manga.get("title").getAsString();
         String imageSource = json_manga.get("cover_url").getAsString();
-        Image cover = imageFromURL(client, PROTOCOL + "://" + DOMAIN + imageSource, ParseHelpers.COVER_MAX_WIDTH);
+        Image cover = imageFromURL(client, PROTOCOL + "://" + DOMAIN + imageSource,
+                ParseHelpers.COVER_MAX_WIDTH);
         Language language = Languages.get(json_manga.get("lang_name").getAsString());
         String author = json_manga.get("author").getAsString();
         String artist = json_manga.get("artist").getAsString();
@@ -150,6 +110,8 @@ public class MangaDex extends GenericContentSource {
         metadata.put("author", author);
         metadata.put("artist", artist);
         metadata.put("status", status);
+        metadata.put("altNames", new String[]{"test", "here"});
+        metadata.put("genres", new String[]{}); // TODO: parse these from id codes
         metadata.put("description", description);
 
         Series series = new Series(title, source, cover, ID, metadata);
@@ -164,26 +126,27 @@ public class MangaDex extends GenericContentSource {
         if (chapter.imageUrlTemplate != null) {
             result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page));
         } else {
-            Response response = GET(client, PROTOCOL + "://" + DOMAIN + "/api" + chapter.getSource());
-            JsonObject json_data = new JsonParser().parse(response.body().string())
-                    .getAsJsonObject();
+            Response response =
+                    GET(client, PROTOCOL + "://" + DOMAIN + "/api" + chapter.getSource());
+            JsonObject json_data =
+                    new JsonParser().parse(response.body().string()).getAsJsonObject();
 
             String status = json_data.get("status").getAsString();
             if (status.equals("OK")) {
                 JsonArray pages = json_data.get("page_array").getAsJsonArray();
 
                 chapter.images = new Image[pages.size()];
-                chapter.imageUrlTemplate = json_data.get("server").getAsString() +
-                        json_data.get("hash").getAsString() + "/" +
-                        (pages.get(page - 1).getAsString().replace("1", "%s"));
+                chapter.imageUrlTemplate =
+                        json_data.get("server").getAsString() + json_data.get("hash").getAsString()
+                                + "/" + (pages.get(page - 1).getAsString().replace("1", "%s"));
 
                 // rerun the method, but we should now match chapter.iUT != null
                 result = image(chapter, page);
             } else if (status.equals("delayed")) {
                 String group_website = json_data.get("group_website").getAsString();
                 throw new ContentUnavailableException(
-                        "This content is not available because its release has been delayed by the " +
-                                "group.\nYou may be able to read it at: " + group_website);
+                        "This content is not available because its release has been delayed by the "
+                                + "group.\nYou may be able to read it at: " + group_website);
             }
         }
 

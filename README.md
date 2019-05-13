@@ -15,7 +15,7 @@ maintainer.
 
 | ID | Name | Domain | Comments |
 | - | - | - | - |
-| 0 | MangaDex  | mangadex.org      | currently unavailable due to DDoS protections |
+| 0 | MangaDex  | mangadex.org      | search only accepts series IDs (from page URL) |
 | 1 | MangaHere | www.mangahere.cc  | some licensed series are unavailable |
 | 2 | MangaSee  | mangaseeonline.us | --- |
 | 3 | MangaTown | www.mangatown.com | default series list is unavailable, but otherwise fully functional |
