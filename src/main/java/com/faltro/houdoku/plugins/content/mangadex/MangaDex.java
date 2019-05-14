@@ -29,7 +29,7 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 3;
+    public static final int REVISION = 4;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -54,14 +54,14 @@ public class MangaDex extends GenericContentSource {
             Elements entries = document.select("div[class*=manga-entry]");
 
             for (Element entry : entries) {
-                Element link = entry.selectFirst("a");
-                String title = link.attr("title");
+                Element link = entry.selectFirst("a[class*=manga_title]");
+                String title = link.text();
                 String author = entry.select("a").get(1).attr("title");
                 String source_extended =
                         link.attr("href").substring(0, link.attr("href").lastIndexOf("/"));
                 String source = source_extended.substring(7);
 
-                String details = String.format("%s\n%s", title, author);
+                String details = String.format("%s", title);
 
                 HashMap<String, Object> content = new HashMap<>();
                 content.put("contentSourceId", ID);
