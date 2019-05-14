@@ -29,7 +29,7 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 2;
+    public static final int REVISION = 3;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -47,8 +47,29 @@ public class MangaDex extends GenericContentSource {
             content.put("title", series.getTitle());
             content.put("coverImg", series.getCover());
             content.put("details", details);
-
             data_arr.add(content);
+        } else if (query.equals("")) {
+            // if query is empty, retrieve a list of series from the front page
+            Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + "/titles"));
+            Elements entries = document.select("div[class*=manga-entry]");
+
+            for (Element entry : entries) {
+                Element link = entry.selectFirst("a");
+                String title = link.attr("title");
+                String author = entry.select("a").get(1).attr("title");
+                String source_extended =
+                        link.attr("href").substring(0, link.attr("href").lastIndexOf("/"));
+                String source = source_extended.substring(7);
+
+                String details = String.format("%s\n%s", title, author);
+
+                HashMap<String, Object> content = new HashMap<>();
+                content.put("contentSourceId", ID);
+                content.put("source", source);
+                content.put("title", title);
+                content.put("details", details);
+                data_arr.add(content);
+            }
         }
         return data_arr;
     }
@@ -89,8 +110,7 @@ public class MangaDex extends GenericContentSource {
 
     @Override
     public Series series(String source, boolean quick) throws IOException {
-        Response response =
-                GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + source);
+        Response response = GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + source);
         JsonObject json_data = new JsonParser().parse(response.body().string()).getAsJsonObject();
         JsonObject json_manga = json_data.get("manga").getAsJsonObject();
 
@@ -110,13 +130,24 @@ public class MangaDex extends GenericContentSource {
         metadata.put("author", author);
         metadata.put("artist", artist);
         metadata.put("status", status);
-        metadata.put("altNames", new String[]{"test", "here"});
-        metadata.put("genres", new String[]{}); // TODO: parse these from id codes
+        metadata.put("altNames", new String[] {"test", "here"});
+        metadata.put("genres", new String[] {}); // TODO: parse these from id codes
         metadata.put("description", description);
 
         Series series = new Series(title, source, cover, ID, metadata);
         series.setChapters(chapters(series));
         return series;
+    }
+
+    @Override
+    public Image cover(String source) throws IOException {
+        Response response = GET(client, PROTOCOL + "://" + DOMAIN + "/api/manga/" + source);
+        JsonObject json_data = new JsonParser().parse(response.body().string()).getAsJsonObject();
+        JsonObject json_manga = json_data.get("manga").getAsJsonObject();
+
+        String imageSource = json_manga.get("cover_url").getAsString();
+        return imageFromURL(client, PROTOCOL + "://" + DOMAIN + imageSource,
+                ParseHelpers.COVER_MAX_WIDTH);
     }
 
     @Override
