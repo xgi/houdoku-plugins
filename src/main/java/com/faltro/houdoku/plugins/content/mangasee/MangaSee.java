@@ -24,12 +24,14 @@ public class MangaSee extends GenericContentSource {
     public static final String NAME = "MangaSee";
     public static final String DOMAIN = "mangaseeonline.us";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 1;
+    public static final int REVISION = 2;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
         FormBody.Builder body = new FormBody.Builder();
         body.add("keyword", query);
+        body.add("sortBy", "popularity");
+        body.add("sortOrder", "descending");
         Document document = parse(
                 POST(client, PROTOCOL + "://" + DOMAIN + "/search/request.php", body.build())
         );

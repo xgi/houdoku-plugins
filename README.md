@@ -19,7 +19,7 @@ maintainer.
 | 1 | MangaHere | [www.mangahere.cc](https://www.mangahere.cc)   | some licensed series are unavailable |
 | 2 | MangaSee  | [mangaseeonline.us](https://mangaseeonline.us) | --- |
 | 3 | MangaTown | [www.mangatown.com](http://www.mangatown.com)  | default series list is unavailable, but otherwise fully functional |
-| 4 | MangaPark | [mangapark.me](https://mangapark.me)           | --- |
+| 4 | MangaPark | [mangapark.net](https://mangapark.net)         | --- |
 | 5 | MangaFree | [mangafree.online](https://mangafree.online)   | --- |
 | 6 | MangaHasu | [mangahasu.se](http://mangahasu.se)            | some chapters are arbitrarily unavailable |
 | 7 | MangaNelo | [manganelo.com](https://manganelo.com)         | --- |

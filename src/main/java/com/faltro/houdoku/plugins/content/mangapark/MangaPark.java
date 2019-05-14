@@ -7,12 +7,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import javafx.scene.image.Image;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,19 +18,19 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-
 import static com.faltro.houdoku.net.Requests.*;
 
 public class MangaPark extends GenericContentSource {
     public static final int ID = 4;
     public static final String NAME = "MangaPark";
-    public static final String DOMAIN = "mangapark.me";
+    public static final String DOMAIN = "mangapark.net";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 1;
+    public static final int REVISION = 2;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
-        Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + "/search?q=" + query));
+        Document document = parse(
+                GET(client, PROTOCOL + "://" + DOMAIN + "/search?orderby=views_a&q=" + query));
 
         ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
         Elements results = document.selectFirst("div[class=manga-list]").select("div[class*=item]");
@@ -46,11 +44,7 @@ public class MangaPark extends GenericContentSource {
             String release = info_links.last().text();
             String status = info_links.get(info_links.size() - 2).text();
 
-            String details = String.format("%s\nStatus: %s\nReleased: %s",
-                    title,
-                    status,
-                    release
-            );
+            String details = String.format("%s\nStatus: %s\nReleased: %s", title, status, release);
 
             HashMap<String, Object> content = new HashMap<>();
             content.put("contentSourceId", ID);
@@ -71,13 +65,14 @@ public class MangaPark extends GenericContentSource {
         ArrayList<Chapter> chapters = new ArrayList<>();
         for (Element item : container.select("li")) {
             Element link = item.selectFirst("a");
-            String title = link.parent().ownText().equals("") ?
-                    link.text() : link.parent().ownText().substring(2);
+            String title = link.parent().ownText().equals("") ? link.text()
+                    : link.parent().ownText().substring(2);
             String source_extended = link.attr("href");
             String source = source_extended.substring(0, source_extended.lastIndexOf("/"));
 
             String[] chapter_cont = link.text().split("ch.");
-            double chapterNum = chapter_cont.length > 1 ? ParseHelpers.parseDouble(chapter_cont[1]) : 0;
+            double chapterNum =
+                    chapter_cont.length > 1 ? ParseHelpers.parseDouble(chapter_cont[1]) : 0;
 
             HashMap<String, Object> metadata = new HashMap<>();
             metadata.put("chapterNum", chapterNum);
@@ -95,8 +90,8 @@ public class MangaPark extends GenericContentSource {
 
         Element container = seriesDocument.selectFirst("section[class=manga]");
         String image_source = container.selectFirst("img").attr("src");
-        Image cover = imageFromURL(client, PROTOCOL + ":" + image_source,
-                ParseHelpers.COVER_MAX_WIDTH);
+        Image cover =
+                imageFromURL(client, PROTOCOL + ":" + image_source, ParseHelpers.COVER_MAX_WIDTH);
 
         String title = container.selectFirst("img").attr("title");
         String description = seriesDocument.selectFirst("p[class=summary]").text();
@@ -149,7 +144,7 @@ public class MangaPark extends GenericContentSource {
 
             chapter.images = new Image[urls.length];
             chapter.imageUrls = urls;
-            
+
             // rerun the method, but we should now match chapter.imageUrls != null
             return image(chapter, page);
         } else {

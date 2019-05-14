@@ -1,8 +1,8 @@
 {
     "id": 4,
     "name": "MangaPark",
-    "domain": "mangapark.me",
+    "domain": "mangapark.net",
     "type": "content",
     "class": "MangaPark",
-    "revision": 1
+    "revision": 2
 }
