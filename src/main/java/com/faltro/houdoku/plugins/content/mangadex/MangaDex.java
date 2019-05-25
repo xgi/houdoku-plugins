@@ -29,7 +29,89 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 4;
+    public static final int REVISION = 5;
+
+    private static final HashMap<Integer, String> GENRES = new HashMap<Integer, String>();
+    static {
+        GENRES.put(1, "4-koma");
+        GENRES.put(10, "Fantasy");
+        GENRES.put(11, "Gyaru");
+        GENRES.put(12, "Harem");
+        GENRES.put(13, "Historical");
+        GENRES.put(14, "Horror");
+        GENRES.put(16, "Martial Arts");
+        GENRES.put(17, "Mecha");
+        GENRES.put(18, "Medical");
+        GENRES.put(19, "Music");
+        GENRES.put(2, "Action");
+        GENRES.put(20, "Mystery");
+        GENRES.put(21, "Oneshot");
+        GENRES.put(22, "Psychological");
+        GENRES.put(23, "Romance");
+        GENRES.put(24, "School Life");
+        GENRES.put(25, "Sci-Fi");
+        GENRES.put(28, "Shoujo Ai");
+        GENRES.put(3, "Adventure");
+        GENRES.put(30, "Shounen Ai");
+        GENRES.put(31, "Slice of Life");
+        GENRES.put(32, "Smut");
+        GENRES.put(33, "Sports");
+        GENRES.put(34, "Supernatural");
+        GENRES.put(35, "Tragedy");
+        GENRES.put(36, "Long Strip");
+        GENRES.put(37, "Yaoi");
+        GENRES.put(38, "Yuri");
+        GENRES.put(4, "Award Winning");
+        GENRES.put(40, "Video Games");
+        GENRES.put(41, "Isekai");
+        GENRES.put(42, "Adaptation");
+        GENRES.put(43, "Anthology");
+        GENRES.put(44, "Web Comic");
+        GENRES.put(45, "Full Color");
+        GENRES.put(46, "User Created");
+        GENRES.put(47, "Official Colored");
+        GENRES.put(48, "Fan Colored");
+        GENRES.put(49, "Gore");
+        GENRES.put(5, "Comedy");
+        GENRES.put(50, "Sexual Violence");
+        GENRES.put(51, "Crime");
+        GENRES.put(52, "Magical Girls");
+        GENRES.put(53, "Philosophical");
+        GENRES.put(54, "Superhero");
+        GENRES.put(55, "Thriller");
+        GENRES.put(56, "Wuxia");
+        GENRES.put(57, "Aliens");
+        GENRES.put(58, "Animals");
+        GENRES.put(59, "Crossdressing");
+        GENRES.put(6, "Cooking");
+        GENRES.put(60, "Demons");
+        GENRES.put(61, "Delinquents");
+        GENRES.put(62, "Genderswap");
+        GENRES.put(63, "Ghosts");
+        GENRES.put(64, "Monster Girls");
+        GENRES.put(65, "Loli");
+        GENRES.put(66, "Magic");
+        GENRES.put(67, "Military");
+        GENRES.put(68, "Monsters");
+        GENRES.put(69, "Ninja");
+        GENRES.put(7, "Doujinshi");
+        GENRES.put(70, "Office Workers");
+        GENRES.put(71, "Police");
+        GENRES.put(72, "Post-Apocalyptic");
+        GENRES.put(73, "Reincarnation");
+        GENRES.put(74, "Reverse Harem");
+        GENRES.put(75, "Samurai");
+        GENRES.put(76, "Shota");
+        GENRES.put(77, "Survival");
+        GENRES.put(78, "Time Travel");
+        GENRES.put(79, "Vampires");
+        GENRES.put(8, "Drama");
+        GENRES.put(80, "Traditional Games");
+        GENRES.put(81, "Virtual Reality");
+        GENRES.put(82, "Zombies");
+        GENRES.put(83, "Incest");
+        GENRES.put(9, "Ecchi");
+    }
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -124,6 +206,12 @@ public class MangaDex extends GenericContentSource {
         String description = json_manga.get("description").getAsString();
         int status_code = json_manga.get("status").getAsInt();
         String status = status_code == 1 ? "Releasing" : "Finished";
+        JsonArray json_genres = json_manga.get("genres").getAsJsonArray();
+        String[] genres = new String[json_genres.size()];
+        for (int i = 0; i < json_genres.size(); i++) {
+            int genre_code = json_genres.get(i).getAsInt();
+            genres[i] = GENRES.get(genre_code);
+        }
 
         HashMap<String, Object> metadata = new HashMap<>();
         metadata.put("language", language);
@@ -131,7 +219,7 @@ public class MangaDex extends GenericContentSource {
         metadata.put("artist", artist);
         metadata.put("status", status);
         metadata.put("altNames", new String[] {"test", "here"});
-        metadata.put("genres", new String[] {}); // TODO: parse these from id codes
+        metadata.put("genres", genres);
         metadata.put("description", description);
 
         Series series = new Series(title, source, cover, ID, metadata);
