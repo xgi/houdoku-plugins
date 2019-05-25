@@ -23,7 +23,7 @@ public class MangaHasu extends GenericContentSource {
     public static final String NAME = "MangaHasu";
     public static final String DOMAIN = "mangahasu.se";
     public static final String PROTOCOL = "http";
-    public static final int REVISION = 2;
+    public static final int REVISION = 3;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -136,7 +136,7 @@ public class MangaHasu extends GenericContentSource {
     public Image image(Chapter chapter, int page) throws IOException, ContentUnavailableException {
         Image result = null;
 
-        if (chapter.imageUrlTemplate != null) {
+        if (chapter.imageUrlTemplate != null && chapter.images.length > 1) {
             String page_number = String.format("%03d", page);
             result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page_number));
         } else {

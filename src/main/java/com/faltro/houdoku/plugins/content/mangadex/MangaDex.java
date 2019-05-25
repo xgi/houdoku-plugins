@@ -29,7 +29,7 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 5;
+    public static final int REVISION = 6;
 
     private static final HashMap<Integer, String> GENRES = new HashMap<Integer, String>();
     static {
@@ -242,7 +242,7 @@ public class MangaDex extends GenericContentSource {
     public Image image(Chapter chapter, int page) throws IOException, ContentUnavailableException {
         Image result = null;
 
-        if (chapter.imageUrlTemplate != null) {
+        if (chapter.imageUrlTemplate != null && chapter.images.length > 1) {
             result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page));
         } else {
             Response response =

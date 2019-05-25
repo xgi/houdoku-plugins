@@ -22,7 +22,7 @@ public class MangaNelo extends GenericContentSource {
     public static final String NAME = "MangaNelo";
     public static final String DOMAIN = "manganelo.com";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 3;
+    public static final int REVISION = 4;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
@@ -132,7 +132,7 @@ public class MangaNelo extends GenericContentSource {
     public Image image(Chapter chapter, int page) throws IOException, ContentUnavailableException {
         Image result = null;
 
-        if (chapter.imageUrlTemplate != null) {
+        if (chapter.imageUrlTemplate != null && chapter.images.length > 1) {
             result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page));
         } else {
             Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource()));
