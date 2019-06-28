@@ -29,7 +29,7 @@ public class MangaDex extends GenericContentSource {
     public static final String NAME = "MangaDex";
     public static final String DOMAIN = "mangadex.org";
     public static final String PROTOCOL = "https";
-    public static final int REVISION = 6;
+    public static final int REVISION = 7;
 
     private static final HashMap<Integer, String> GENRES = new HashMap<Integer, String>();
     static {
@@ -255,9 +255,12 @@ public class MangaDex extends GenericContentSource {
                 JsonArray pages = json_data.get("page_array").getAsJsonArray();
 
                 chapter.images = new Image[pages.size()];
-                chapter.imageUrlTemplate =
-                        json_data.get("server").getAsString() + json_data.get("hash").getAsString()
-                                + "/" + (pages.get(page - 1).getAsString().replace("1", "%s"));
+                String server = json_data.get("server").getAsString();
+                if (server.startsWith("/")) {
+                    server = PROTOCOL + "://" + DOMAIN + server;
+                }
+                chapter.imageUrlTemplate = server + json_data.get("hash").getAsString() + "/"
+                        + (pages.get(page - 1).getAsString().replace("1", "%s"));
 
                 // rerun the method, but we should now match chapter.iUT != null
                 result = image(chapter, page);
