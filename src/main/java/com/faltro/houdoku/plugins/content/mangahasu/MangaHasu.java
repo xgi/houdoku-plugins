@@ -8,14 +8,12 @@ import javafx.scene.image.Image;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-
 import static com.faltro.houdoku.net.Requests.*;
 
 public class MangaHasu extends GenericContentSource {
@@ -23,12 +21,12 @@ public class MangaHasu extends GenericContentSource {
     public static final String NAME = "MangaHasu";
     public static final String DOMAIN = "mangahasu.se";
     public static final String PROTOCOL = "http";
-    public static final int REVISION = 3;
+    public static final int REVISION = 4;
 
     @Override
     public ArrayList<HashMap<String, Object>> search(String query) throws IOException {
-        Document document =
-                parse(GET(client, PROTOCOL + "://" + DOMAIN + "/advanced-search.html?keyword=" + query));
+        Document document = parse(
+                GET(client, PROTOCOL + "://" + DOMAIN + "/advanced-search.html?keyword=" + query));
 
         ArrayList<HashMap<String, Object>> data_arr = new ArrayList<>();
         Elements results = document.selectFirst("ul[class=list_manga]").select("li");
@@ -39,10 +37,7 @@ public class MangaHasu extends GenericContentSource {
             String coverSrc = result.selectFirst("img").attr("src");
             String latest = result.selectFirst("a[class=name-chapter]").selectFirst("span").text();
 
-            String details = String.format("%s\nLatest: %s",
-                    title,
-                    latest
-            );
+            String details = String.format("%s\nLatest: %s", title, latest);
 
             HashMap<String, Object> content = new HashMap<>();
             content.put("contentSourceId", ID);
@@ -58,8 +53,8 @@ public class MangaHasu extends GenericContentSource {
 
     @Override
     public ArrayList<Chapter> chapters(Series series, Document seriesDocument) {
-        Elements rows = seriesDocument.selectFirst("div[class=list-chapter]")
-                .selectFirst("tbody").select("tr");
+        Elements rows = seriesDocument.selectFirst("div[class=list-chapter]").selectFirst("tbody")
+                .select("tr");
 
         ArrayList<Chapter> chapters = new ArrayList<>();
         for (Element row : rows) {
@@ -68,14 +63,12 @@ public class MangaHasu extends GenericContentSource {
             String source = link.attr("href").substring(PROTOCOL.length() + 3 + DOMAIN.length());
             String chapterNumExtended = link.text();
             double chapterNum = ParseHelpers.parseDouble(
-                    chapterNumExtended.substring(chapterNumExtended.indexOf("hapter") + 7)
-            );
+                    chapterNumExtended.substring(chapterNumExtended.indexOf("hapter") + 7));
             String dateString = row.selectFirst("td[class=date-updated]").text();
-            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
-                    "MMM d, yyyy", Locale.ENGLISH
-            );
-            LocalDateTime localDateTime = ParseHelpers.potentiallyRelativeDate(
-                    dateString, dateTimeFormatter);
+            DateTimeFormatter dateTimeFormatter =
+                    DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH);
+            LocalDateTime localDateTime =
+                    ParseHelpers.potentiallyRelativeDate(dateString, dateTimeFormatter);
 
             HashMap<String, Object> metadata = new HashMap<>();
             metadata.put("chapterNum", chapterNum);
@@ -102,16 +95,14 @@ public class MangaHasu extends GenericContentSource {
         String[] altNames = container.selectFirst("h3").text().split("; ");
         String author = rows.get(0).selectFirst("span").text();
         String artist = rows.get(1).selectFirst("span").text();
-        String[] genres = ParseHelpers.htmlListToStringArray(
-                rows.get(3).selectFirst("span"), "a");
+        String[] genres = ParseHelpers.htmlListToStringArray(rows.get(3).selectFirst("span"), "a");
         String status = rows.get(4).selectFirst("span").text();
         int views = ParseHelpers.parseInt(rows.get(5).selectFirst("span").text());
-        double rating = ParseHelpers.parseDouble(
-                container.selectFirst("span[class=ratings]").text());
-        int ratings = ParseHelpers.parseInt(
-                container.selectFirst("span[class=div_evaluate]").text());
-        int follows = ParseHelpers.parseInt(
-                container.selectFirst("span[class=div_follow]").text());
+        double rating =
+                ParseHelpers.parseDouble(container.selectFirst("span[class=ratings]").text());
+        int ratings =
+                ParseHelpers.parseInt(container.selectFirst("span[class=div_evaluate]").text());
+        int follows = ParseHelpers.parseInt(container.selectFirst("span[class=div_follow]").text());
         String description =
                 seriesDocument.selectFirst("div[class=content-info]").selectFirst("div").text();
 
@@ -141,7 +132,13 @@ public class MangaHasu extends GenericContentSource {
             result = imageFromURL(client, String.format(chapter.imageUrlTemplate, page_number));
         } else {
             Document document = parse(GET(client, PROTOCOL + "://" + DOMAIN + chapter.getSource()));
-            Elements images = document.selectFirst("div[class=img-chapter]").select("img");
+            Element image_container = document.selectFirst("div[class=img-chapter]");
+            if (image_container == null) {
+                throw new ContentUnavailableException(
+                        "This content is not available due to a network restriction.\nYou may be "
+                                + "able to read it at " + DOMAIN);
+            }
+            Elements images = image_container.select("img");
             String first_src = images.get(0).attr("src");
 
             chapter.images = new Image[images.size()];
