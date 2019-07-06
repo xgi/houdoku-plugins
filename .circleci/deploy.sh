@@ -17,8 +17,10 @@ PLUGINS_DIR=build/classes/java/main/com/faltro/houdoku/plugins
 SOURCE_DIR=src/main/java/com/faltro/houdoku/plugins
 
 for dir in $SOURCE_DIR/*/*; do
-    dir=${dir%*/};
-    cat $dir/metadata.json | jq -r
+    filename=`basename $dir/*.java`
+    classname=`basename $(dirname $dir)`/${filename%.*}.class
+    md5sum=`md5sum $PLUGINS_DIR/$classname | awk '{ print $1 }'`
+    cat ${dir%*/}/metadata.json | jq -r --arg md5sum $md5sum '. + {md5sum: $md5sum}'
 done | jq -sr '[.[]]' > index.json
 
 ./gcloud-sdk/bin/gsutil cp -r index.json gs://houdoku-plugins
